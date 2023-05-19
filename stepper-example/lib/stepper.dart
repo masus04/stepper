@@ -53,7 +53,7 @@ class IndependentStepper extends HookWidget {
           onStepTapped: (index) {
             final nextStep = onStepTapped(steps[currentStep.value], index);
             if (nextStep != null) {
-              currentStep.value;
+              currentStep.value = nextStep;
             }
           },
         ),
