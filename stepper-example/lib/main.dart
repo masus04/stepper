@@ -25,31 +25,22 @@ class _StepperExampleState extends State<StepperExample> {
       ),
       home: Scaffold(
         body: IndependentStepper(
-          currentStep: step,
           showCompleteButtons: true,
           onConfirm: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Confirmed!"))),
           steps: [
-            IndependentStep(
+            IndependentStepData(
               title: "First Step",
-              onContinue: () {
-                setState(() {
-                  step += 1;
-                });
-              },
-              onCancel: () {},
+              onContinue: (int currentStep) => currentStep + 1,
+              onCancel: (int currentStep) => null,
               child: const Padding(
                 padding: EdgeInsets.all(8),
                 child: Icon(Icons.emoji_emotions_outlined),
               ),
             ),
-            IndependentStep(
+            IndependentStepData(
               title: "Second Step",
-              onContinue: () {},
-              onCancel: () {
-                setState(() {
-                  step -= 1;
-                });
-              },
+              onContinue: (int currentStep) => null,
+              onCancel: (int currentStep) => currentStep - 1,
               child: const Padding(
                 padding: EdgeInsets.all(8),
                 child: Icon(Icons.emoji_emotions),
