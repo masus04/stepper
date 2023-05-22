@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
-
-class IndependentStepper<T extends IndependentStepData<T>> extends HookWidget {
-  final List<T> steps;
+class IndependentStepper extends HookWidget {
+  final List<IndependentStepData> steps;
 
   final bool showCompleteButtons;
 
@@ -14,7 +13,7 @@ class IndependentStepper<T extends IndependentStepData<T>> extends HookWidget {
   final String cancelLabel;
   final void Function()? onCancel;
 
-  final int? Function(T step, int nextStep)? onStepTapped;
+  final int? Function(IndependentStepData step, int nextStep)? onStepTapped;
 
   const IndependentStepper({
     super.key,
@@ -41,7 +40,7 @@ class IndependentStepper<T extends IndependentStepData<T>> extends HookWidget {
                   title: Text(
                     step.title,
                   ),
-                  content: IndependentStep<T>(
+                  content: IndependentStep(
                     stepData: step,
                     stepIndex: index,
                     currentStep: currentStep,
@@ -88,7 +87,7 @@ class IndependentStepper<T extends IndependentStepData<T>> extends HookWidget {
     );
   }
 
-  int? defaultOnStepTapped(T stepData, int nextStep) {
+  int? defaultOnStepTapped(IndependentStepData stepData, int nextStep) {
     /// Returns the index of the next step if it should be changed or null otherwise.
     if (stepData.validate == null || stepData.validate!(stepData) == null) {
       // No validate function available or no error string returned
@@ -99,21 +98,23 @@ class IndependentStepper<T extends IndependentStepData<T>> extends HookWidget {
   }
 }
 
-class IndependentStepData<T extends IndependentStepData<T>> {
+class IndependentStepData {
+  final String id;
   final String title;
   final Widget child;
 
   final String continueLabel;
-  final int? Function(int currentStep, T stepData) onContinue;
+  final int Function(int currentStep, IndependentStepData stepData) onContinue;
 
   final String cancelLabel;
-  final int? Function(int currentStep, T stepData) onCancel;
+  final int Function(int currentStep, IndependentStepData stepData) onCancel;
 
-  final String? Function(T stepData)? validate;
+  final String? Function(IndependentStepData stepData)? validate;
 
   final Alignment alignment;
 
   IndependentStepData({
+    required this.id,
     required this.title,
     required this.child,
     this.continueLabel = "Continue",
@@ -125,8 +126,8 @@ class IndependentStepData<T extends IndependentStepData<T>> {
   });
 }
 
-class IndependentStep<T extends IndependentStepData<T>> extends StatelessWidget {
-  final T stepData;
+class IndependentStep extends StatelessWidget {
+  final IndependentStepData stepData;
   final int stepIndex;
   final ValueNotifier<int> currentStep;
 
@@ -143,9 +144,7 @@ class IndependentStep<T extends IndependentStepData<T>> extends StatelessWidget 
             ElevatedButton(
               onPressed: () {
                 final nextStep = stepData.onContinue(stepIndex, stepData);
-                if (nextStep != null) {
-                  currentStep.value = nextStep;
-                }
+                currentStep.value = nextStep;
               },
               style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor),
               child: Text(
@@ -157,9 +156,7 @@ class IndependentStep<T extends IndependentStepData<T>> extends StatelessWidget 
             TextButton(
               onPressed: () {
                 final nextStep = stepData.onCancel(stepIndex, stepData);
-                if (nextStep != null) {
-                  currentStep.value = nextStep;
-                }
+                currentStep.value = nextStep;
               },
               child: Text(stepData.cancelLabel),
             ),

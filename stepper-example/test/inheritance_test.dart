@@ -5,33 +5,38 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:flutter/foundation.dart';
+class Stepper<T extends StepData> {
+  final List<T> steps;
 
-class StepData<T extends StepData<T>> {
+  Stepper({required this.steps});
+}
+
+class StepData<T> {
   final int? Function(T stepData) stepFunc;
 
-  StepData(this.stepFunc);
+  StepData({required this.stepFunc});
 }
 
 class ConcreteStepData extends StepData<ConcreteStepData> {
-  final String id;
+  final int id;
 
-  ConcreteStepData(
-    this.id,
-    super.stepFunc,
-  );
+  ConcreteStepData({
+    required this.id,
+    required super.stepFunc,
+  });
 }
 
 void main() {
   test("Test generic Inheritance", () {
-    final data = ConcreteStepData("some-id", (stepData) {
-      debugPrint(stepData.id);
-      return null;
-    });
+    final step = ConcreteStepData(
+      id: 32,
+      stepFunc: (stepData) => stepData.id,
+    );
 
-    data.stepFunc(data);
+    final stepper = Stepper(steps: [step]);
+
+    stepper.steps[0].stepFunc(step);
   });
 }

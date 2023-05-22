@@ -24,29 +24,29 @@ class _StepperExampleState extends State<StepperExample> {
         useMaterial3: true,
       ),
       home: Scaffold(
-        body: IndependentStepper<ExampleStepData>(
+        body: IndependentStepper(
           showCompleteButtons: true,
           onConfirm: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Confirmed!"))),
           steps: [
-            ExampleStepData(
+            IndependentStepData(
               id: "first-step",
               title: "First Step",
               onContinue: (currentStep, stepData) => currentStep + 1,
               onCancel: (currentStep, stepData) {
                 debugPrint("${stepData.id} canceled");
-                return null;
+                return currentStep;
               },
               child: const Padding(
                 padding: EdgeInsets.all(8),
                 child: Icon(Icons.emoji_emotions_outlined),
               ),
             ),
-            ExampleStepData(
+            IndependentStepData(
               id: "second-step",
               title: "Second Step",
               onContinue: (currentStep, stepData) {
                 debugPrint("${stepData.title} continued");
-                return null;
+                return currentStep;
               },
               onCancel: (currentStep, stepData) => currentStep - 1,
               child: const Padding(
@@ -59,16 +59,4 @@ class _StepperExampleState extends State<StepperExample> {
       ),
     );
   }
-}
-
-class ExampleStepData extends IndependentStepData<ExampleStepData> {
-  final String id;
-
-  ExampleStepData({
-    required this.id,
-    required super.title,
-    required super.child,
-    required super.onContinue,
-    required super.onCancel,
-  });
 }
