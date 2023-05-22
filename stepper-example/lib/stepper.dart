@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
-class IndependentStepper extends HookWidget {
-  final List<IndependentStepData> steps;
+
+class IndependentStepper<T extends IndependentStepData<T>> extends HookWidget {
+  final List<T> steps;
 
   final bool showCompleteButtons;
 
@@ -13,7 +14,7 @@ class IndependentStepper extends HookWidget {
   final String cancelLabel;
   final void Function()? onCancel;
 
-  final int? Function(IndependentStepData step, int nextStep) onStepTapped;
+  final int? Function(T step, int nextStep)? onStepTapped;
 
   const IndependentStepper({
     super.key,
@@ -23,7 +24,7 @@ class IndependentStepper extends HookWidget {
     this.onCancel,
     this.confirmLabel = "Confirm",
     this.cancelLabel = "Cancel",
-    this.onStepTapped = IndependentStepper.defaultOnStepTapped,
+    this.onStepTapped,
   });
 
   @override
@@ -40,7 +41,7 @@ class IndependentStepper extends HookWidget {
                   title: Text(
                     step.title,
                   ),
-                  content: IndependentStep(
+                  content: IndependentStep<T>(
                     stepData: step,
                     stepIndex: index,
                     currentStep: currentStep,
@@ -51,7 +52,13 @@ class IndependentStepper extends HookWidget {
           currentStep: currentStep.value,
           controlsBuilder: (context, details) => const SizedBox.shrink(),
           onStepTapped: (index) {
-            final nextStep = onStepTapped(steps[currentStep.value], index);
+            final int? nextStep;
+            if (onStepTapped == null) {
+              nextStep = defaultOnStepTapped(steps[currentStep.value], index);
+            } else {
+              nextStep = onStepTapped!(steps[currentStep.value], index);
+            }
+
             if (nextStep != null) {
               currentStep.value = nextStep;
             }
@@ -81,9 +88,10 @@ class IndependentStepper extends HookWidget {
     );
   }
 
-  static int? defaultOnStepTapped(IndependentStepData step, int nextStep) {
+  int? defaultOnStepTapped(T stepData, int nextStep) {
     /// Returns the index of the next step if it should be changed or null otherwise.
-    if (step.validate() == null) {
+    if (stepData.validate == null || stepData.validate!(stepData) == null) {
+      // No validate function available or no error string returned
       return nextStep;
     } else {
       return null;
@@ -91,17 +99,17 @@ class IndependentStepper extends HookWidget {
   }
 }
 
-class IndependentStepData {
+class IndependentStepData<T extends IndependentStepData<T>> {
   final String title;
   final Widget child;
 
   final String continueLabel;
-  final int? Function(int currentStep) onContinue;
+  final int? Function(int currentStep, T stepData) onContinue;
 
   final String cancelLabel;
-  final int? Function(int currentStep) onCancel;
+  final int? Function(int currentStep, T stepData) onCancel;
 
-  final String? Function() validate;
+  final String? Function(T stepData)? validate;
 
   final Alignment alignment;
 
@@ -112,13 +120,13 @@ class IndependentStepData {
     required this.onContinue,
     this.cancelLabel = "Cancel",
     required this.onCancel,
-    this.validate = IndependentStep.defaultValidate,
+    this.validate,
     this.alignment = Alignment.centerLeft,
   });
 }
 
-class IndependentStep extends StatelessWidget {
-  final IndependentStepData stepData;
+class IndependentStep<T extends IndependentStepData<T>> extends StatelessWidget {
+  final T stepData;
   final int stepIndex;
   final ValueNotifier<int> currentStep;
 
@@ -134,7 +142,7 @@ class IndependentStep extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                final nextStep = stepData.onContinue(stepIndex);
+                final nextStep = stepData.onContinue(stepIndex, stepData);
                 if (nextStep != null) {
                   currentStep.value = nextStep;
                 }
@@ -148,7 +156,7 @@ class IndependentStep extends StatelessWidget {
             const SizedBox(width: 8),
             TextButton(
               onPressed: () {
-                final nextStep = stepData.onCancel(stepIndex);
+                final nextStep = stepData.onCancel(stepIndex, stepData);
                 if (nextStep != null) {
                   currentStep.value = nextStep;
                 }
@@ -159,9 +167,5 @@ class IndependentStep extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  static String? defaultValidate() {
-    return null;
   }
 }
