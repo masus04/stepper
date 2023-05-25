@@ -42,8 +42,16 @@ class _StepperExampleState extends State<StepperExample> {
               ),
             ),
             IndependentStepData(
-              id: "second-step",
-              title: "Second Step",
+              id: "intermediate-step",
+              title: "Intermediate Step",
+              child: const Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(Icons.emoji_emotions_outlined),
+              ),
+            ),
+            IndependentStepData(
+              id: "last-step",
+              title: "Last Step",
               onContinue: (currentStep, stepData) {
                 debugPrint("${stepData.title} continued");
                 return currentStep;

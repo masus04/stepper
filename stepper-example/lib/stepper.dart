@@ -104,10 +104,10 @@ class IndependentStepData {
   final Widget child;
 
   final String continueLabel;
-  final int Function(int currentStep, IndependentStepData stepData) onContinue;
+  final int Function(int currentStep, IndependentStepData stepData)? onContinue;
 
   final String cancelLabel;
-  final int Function(int currentStep, IndependentStepData stepData) onCancel;
+  final int Function(int currentStep, IndependentStepData stepData)? onCancel;
 
   final String? Function(IndependentStepData stepData)? validate;
 
@@ -118,9 +118,9 @@ class IndependentStepData {
     required this.title,
     required this.child,
     this.continueLabel = "Continue",
-    required this.onContinue,
+    this.onContinue,
     this.cancelLabel = "Cancel",
-    required this.onCancel,
+    this.onCancel,
     this.validate,
     this.alignment = Alignment.centerLeft,
   });
@@ -143,8 +143,7 @@ class IndependentStep extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                final nextStep = stepData.onContinue(stepIndex, stepData);
-                currentStep.value = nextStep;
+                currentStep.value = stepData.onContinue == null ? defaultContinue(stepIndex, stepData) : stepData.onContinue!(stepIndex, stepData);
               },
               style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor),
               child: Text(
@@ -155,8 +154,7 @@ class IndependentStep extends StatelessWidget {
             const SizedBox(width: 8),
             TextButton(
               onPressed: () {
-                final nextStep = stepData.onCancel(stepIndex, stepData);
-                currentStep.value = nextStep;
+                currentStep.value = stepData.onCancel == null ? defaultCancel(stepIndex, stepData) : stepData.onCancel!(stepIndex, stepData);
               },
               child: Text(stepData.cancelLabel),
             ),
@@ -164,5 +162,21 @@ class IndependentStep extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  int defaultContinue(int currentStep, IndependentStepData stepData) {
+    if (stepData.validate != null && stepData.validate!(stepData) != null) {
+      return currentStep;
+    }
+
+    return currentStep + 1;
+  }
+
+  int defaultCancel(int currentStep, IndependentStepData stepData) {
+    if (currentStep > 0) {
+      return currentStep - 1;
+    } else {
+      return 0;
+    }
   }
 }
